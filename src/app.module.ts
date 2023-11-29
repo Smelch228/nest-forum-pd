@@ -5,7 +5,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { HashModule } from './hash/hash.module';
+import { BcryptModule } from './crypto/crypto.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { HashModule } from './hash/hash.module';
     ConfigModule.forRoot({ isGlobal: true }),
     UsersModule,
     AuthModule,
-    HashModule,
+    BcryptModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

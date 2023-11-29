@@ -2,13 +2,13 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { HashService } from '../hash/hash.service';
+import { CryptoService } from '../crypto/crypto.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly hashService: HashService,
+    private readonly hashService: CryptoService,
   ) {}
   async create(dto: CreateUserDto) {
     const emailExists = await this.findByEmail(dto.email);

@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CryptoService } from '../crypto/crypto.service';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly hashService: CryptoService,

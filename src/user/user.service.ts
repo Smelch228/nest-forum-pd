@@ -10,6 +10,7 @@ export class UserService {
     private readonly prisma: PrismaService,
     private readonly hashService: CryptoService,
   ) {}
+
   async create(dto: CreateUserDto) {
     const emailExists = await this.findByEmail(dto.email);
     const usernameExists = await this.findByUsername(dto.username);

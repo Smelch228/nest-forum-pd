@@ -30,6 +30,7 @@ export class AuthService {
   async logoutAllSessions(userId: string): Promise<void> {
     await this.removeAllTokens(userId);
   }
+
   private async addToken(token: string, userId: string, role: string) {
     const userTokensKey = USER_TOKENS_KEY(userId);
     const tokenData = {

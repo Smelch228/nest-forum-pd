@@ -26,6 +26,7 @@ model User {
   updatedAt    DateTime  @updatedAt
   posts        Post[]
   comments     Comment[]
+  Vote         Vote[]
 }
 
 model Post {
@@ -62,4 +63,20 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   posts       Post[]
+}
+
+model Vote {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  upvote      Boolean     @default(true)
+  votableId   Int // ID поста или комментария
+  votableType VotableType // Тип объекта (POST или COMMENT)
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([votableId, votableType]) // Индекс для оптимизации запросов
+}
+
+enum VotableType {
+  POST
+  COMMENT
 }

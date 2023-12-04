@@ -1,1 +1,19 @@
-export class CreatePostDto {}
+import { IsNotEmpty, IsInt, IsString } from 'class-validator';
+
+export class CreatePostDto {
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+
+  @IsNotEmpty()
+  @IsString()
+  content: string;
+
+  @IsNotEmpty()
+  @IsInt()
+  userId: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  categoryId: number;
+}

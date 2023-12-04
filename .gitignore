@@ -1,5 +1,4 @@
 *.env
-/prisma/migrations
 
 # compiled output
 /dist

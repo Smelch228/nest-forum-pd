@@ -1,25 +1,25 @@
-import { Body, Controller, Delete, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Post, UseGuards } from '@nestjs/common';
 import { VotingService } from './voting.service';
 import { VoteDto } from './dto/vote.dto';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { User } from '../common/decorators/user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Voting')
 @Controller('voting')
+@UseGuards(AuthGuard)
 export class VotingController {
   constructor(private readonly votingService: VotingService) {}
 
   @Post()
-  vote(@Body() voteDto: VoteDto) {
-    return this.votingService.vote(
-      voteDto.userId,
-      voteDto.votableId,
-      voteDto.votableType,
-      voteDto.upvote,
-    );
+  vote(@Body() voteDto: VoteDto, @User() user) {
+    return this.votingService.vote(voteDto, +user.id);
   }
 
   @Delete()
-  removeVote(@Body() voteDto: VoteDto) {
+  removeVote(@Body() voteDto: VoteDto, @User() user) {
     return this.votingService.removeVote(
-      voteDto.userId,
+      +user.id,
       voteDto.votableId,
       voteDto.votableType,
     );

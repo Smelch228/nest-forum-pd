@@ -3,9 +3,10 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { BcryptModule } from '../crypto/crypto.module';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
-  imports: [PrismaModule, BcryptModule],
+  imports: [PrismaModule, BcryptModule, RedisModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

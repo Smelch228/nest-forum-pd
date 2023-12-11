@@ -6,6 +6,9 @@ import {
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageMetaDto } from '../common/dto/page-meta.dto';
+import { PageDto } from '../common/dto/page.dto';
 
 @Injectable()
 export class CategoryService {
@@ -30,8 +33,19 @@ export class CategoryService {
     }
   }
 
-  async findAll() {
-    return await this.prisma.category.findMany();
+  async findAll(pageOptionsDto: PageOptionsDto) {
+    const sortOrder = pageOptionsDto.order === 'ASC' ? 'asc' : 'desc';
+    const categories = await this.prisma.category.findMany({
+      skip: pageOptionsDto.skip,
+      take: pageOptionsDto.take,
+      orderBy: { createdAt: sortOrder },
+    });
+    const categoriesCount = await this.prisma.category.count();
+    const pageMetaDto = new PageMetaDto({
+      itemCount: categoriesCount,
+      pageOptionsDto,
+    });
+    return new PageDto(categories, pageMetaDto);
   }
 
   async findOne(id: number) {

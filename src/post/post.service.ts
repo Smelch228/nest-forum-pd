@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -10,6 +11,7 @@ import { VotingService } from '../voting/voting.service';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
 import { PageDto } from '../common/dto/page.dto';
+import { VotableType } from '../common/enums/votable-type.enum';
 
 //TODO: Создай пагинацию и фильтрацию, плюс внедри счётчик голосов.
 @Injectable()
@@ -25,7 +27,9 @@ export class PostService {
         data: { ...createPostDto, userId },
       });
     } catch (error) {
-      throw new Error('Error in creating post: ' + error.message);
+      throw new InternalServerErrorException(
+        'Error in creating post: ' + error.message,
+      );
     }
   }
 
@@ -41,12 +45,23 @@ export class PostService {
     const postsCount = await this.prisma.post.count({
       where: whereCondition,
     });
+
+    const postsWithVotes = await Promise.all(
+      posts.map(async (post) => {
+        const votes = await this.votingService.countVotes(
+          post.id,
+          VotableType.POST,
+        );
+        return { ...post, votes };
+      }),
+    );
+
     const pageMetaDto = new PageMetaDto({
       itemCount: postsCount,
       pageOptionsDto,
     });
 
-    return new PageDto(posts, pageMetaDto);
+    return new PageDto(postsWithVotes, pageMetaDto);
   }
 
   async findOne(id: number) {
@@ -56,14 +71,16 @@ export class PostService {
     if (!post) {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
-    return post;
+
+    const votes = await this.votingService.countVotes(id, VotableType.POST);
+    return { ...post, votes };
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto, userId: number) {
+  async update(id: number, updatePostDto: UpdatePostDto) {
     try {
       return await this.prisma.post.update({
         where: { id },
-        data: { ...updatePostDto, userId },
+        data: { ...updatePostDto },
       });
     } catch (error) {
       throw new NotFoundException(`Post with ID ${id} not found`);
@@ -84,5 +101,39 @@ export class PostService {
     });
 
     return `Post with ID ${id} was deleted`;
+  }
+
+  async findPostsByTitleContains(
+    searchString: string,
+    pageOptionsDto: PageOptionsDto,
+  ) {
+    const sortOrder = pageOptionsDto.order === 'ASC' ? 'asc' : 'desc';
+    const posts = await this.prisma.post.findMany({
+      where: {
+        title: {
+          contains: searchString,
+          mode: 'insensitive', // Для поиска нечувствительного к регистру
+        },
+      },
+      skip: pageOptionsDto.skip,
+      take: pageOptionsDto.take,
+      orderBy: { createdAt: sortOrder },
+    });
+
+    const postsCount = await this.prisma.post.count({
+      where: {
+        title: {
+          contains: searchString,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount: postsCount,
+      pageOptionsDto,
+    });
+
+    return new PageDto(posts, pageMetaDto);
   }
 }

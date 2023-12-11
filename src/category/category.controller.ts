@@ -6,23 +6,32 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Categories')
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
+  @UseGuards(AuthGuard, new RolesGuard(['ADMIN', 'MODERATOR']))
+  @ApiSecurity('session-token')
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  findAll(@Query() pageOptionsDto: PageOptionsDto) {
+    return this.categoryService.findAll(pageOptionsDto);
   }
 
   @Get(':id')
@@ -31,6 +40,8 @@ export class CategoryController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard, new RolesGuard(['ADMIN', 'MODERATOR']))
+  @ApiSecurity('session-token')
   update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -39,6 +50,8 @@ export class CategoryController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard, new RolesGuard(['ADMIN', 'MODERATOR']))
+  @ApiSecurity('session-token')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(+id);
   }

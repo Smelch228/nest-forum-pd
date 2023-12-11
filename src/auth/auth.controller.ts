@@ -5,7 +5,9 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from '../user/user.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { User } from '../common/decorators/user.decorator';
+import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -25,6 +27,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('logout')
+  @ApiSecurity('session-token')
   async logout(@User() user, @Headers('authorization') authHeader) {
     await this.authService.logout(authHeader, user.id);
     return { message: 'Logged out successfully' };
@@ -32,6 +35,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('logout-all')
+  @ApiSecurity('session-token')
   async logoutAll(@User() user) {
     await this.authService.logoutAllSessions(user.id);
     return { message: 'Logged out from all sessions' };
